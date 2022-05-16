@@ -75,19 +75,29 @@ void SocketsArray::receiveMessage(int index)
 	int len = sockets[index].len;
 	int bytesRecv = recv(msgSocket, &sockets[index].buffer[len], sizeof(sockets[index].buffer) - len, 0);
 
-	// test5.html 
+	// fix or add:
 
-	// check what header field needed
+		// test5.html (debug didnt work)
 
-	// check if all codes (200 OK, 404 NOT FOUND .... ) are correct
+		// check what header field needed
+
+		// check what happens when recvBuff has no /r/n/r/n (half header is sent)
+
+		// add API file
+
+	// verify:
+
+		// check if all codes (200 OK, 404 NOT FOUND .... ) are correct
 	
-	// add Allow header line to 405 response messege
+		// add Allow header line to 405 response messege
 
-	// save 'from' in 'acceptConnection' in order to print the address and port of client disconnecting later
+		// support of '.html'
 
-	// if need to support '.html'
+	// bonus:
 
-	// if recvBuff has no /r/n/r/n (half header is sent)
+		// save 'from' in 'acceptConnection' in order to print the address and port of client disconnecting later
+
+		// convert text answers to html answers ("File successfuly deleted"....)
 
 	if (SOCKET_ERROR == bytesRecv)
 	{
