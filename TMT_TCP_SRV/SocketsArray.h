@@ -4,12 +4,12 @@
 #define _CRT_NONSTDC_NO_WARNINGS
 #include <winsock2.h>
 #include <iostream>
-using namespace std;
 #include <time.h>
 #include <sstream>
 #include <map>
 #include <fstream>
 #include <filesystem>
+using namespace std;
 using std::char_traits;
 const int MAX_SOCKETS = 60;
 const int EMPTY = 0;
@@ -29,6 +29,12 @@ const int MAX_BUF_LEN = 1024; // decide what is the needed size !!!!!!!!
 const string SERVER_NAME = (string)"ITAY&DANIEL";
 const string FR = (string)"-fr";
 const string HE = (string)"-he";
+const string Not_Found = string("<html><head></head><body><center><h1>404 Not Found</h1></center></body></html>");
+const string Not_Allowed = string("<html><head></head><body><center><h1>405 This Method is Not Allowed.</h1></center></body></html>");
+const string Bad_Request = string("<html><head></head><body><center><h1>400 Bad Request</h1></center></body></html>");
+const string Created_Successfully = string("<html><head></head><body><center><h1>Created Successfully</h1></center></body></html>");
+const string Cant_Delete = string("<html><head></head><body><center><h1>Error Couldn't Delete File!</h1></center></body></html>");
+const string Successfully_Deleted = string("<html><head></head><body><center><h1>file deleted successfully!!</h1></center></body></html>");
 
 struct SocketState
 {
@@ -40,7 +46,7 @@ struct SocketState
 	map<string, string> messageData;
 	time_t timerSinceLastByteRecv = 0;
 	int len;
-	sockaddr from;
+	sockaddr_in fromAddress;
 };
 
 class SocketsArray

@@ -1,4 +1,4 @@
-
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
 #include <winsock2.h>
 #include <string.h>
@@ -146,6 +146,7 @@ void main()
 			if (socketsArr.getSockets()[i].recv == RECEIVE && socketsArr.calcTimePassed(i) >= 120)
 			{
 				nfd--;
+
 				cout << "HTTP Server: Client " << socketsArr.getSockets()[i].id << " is disconnected\n";
 				closesocket(socketsArr.getSockets()[i].id);
 				socketsArr.removeSocket(i);

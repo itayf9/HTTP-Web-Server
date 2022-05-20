@@ -49,7 +49,7 @@ void SocketsArray::acceptConnection(int index)
 		return;
 	}
 	cout << "HTTP Server: Client " << inet_ntoa(from.sin_addr) << ":" << ntohs(from.sin_port) << " is connected." << msgSocket << endl;
-
+	
 	// Set the socket to be in non-blocking mode.
 	//
 	unsigned long flag = 1;
@@ -75,14 +75,10 @@ void SocketsArray::receiveMessage(int index)
 	int bytesRecv = recv(msgSocket, &sockets[index].buffer[len], sizeof(sockets[index].buffer) - len, 0);
 
 	// fix or add:
-
-		// check what happens when recvBuff has no /r/n/r/n (half header is sent)
+		// check what happens when recvBuff has no /r/n (half header is sent)
 
 	// bonus:
-
 		// save 'from' in 'acceptConnection' in order to print the address and port of client disconnecting later
-
-		// convert text answers to html answers - posible, but Not recomended - creates complications..
 
 	if (SOCKET_ERROR == bytesRecv)
 	{
@@ -106,11 +102,11 @@ void SocketsArray::receiveMessage(int index)
 
 		if (sockets[index].len > 0)
 		{
-			stringstream sstream; 
+			stringstream sstream;
 			sstream << sockets[index].buffer;
 
 			string nextLine;
-			getline(sstream , nextLine, '\n');
+			getline(sstream, nextLine, '\n');
 
 			string option, path, protocol;
 			option = strtok(nextLine.data(), " ");
@@ -123,77 +119,68 @@ void SocketsArray::receiveMessage(int index)
 				path = path.substr(1); // deletes the '/' 
 			}
 			sockets[index].messageData[(string)"path"] = path;
+
+				if (option == "GET")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_GET;
+
+					extractDataToMap(sstream, sizeOfMessage, index);
+				}
+				else if (option == "HEAD")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_HEAD;
+
+					extractDataToMap(sstream, sizeOfMessage, index);
+				}
+				else if (option == "POST")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_POST;
+
+					extractDataToMap(sstream, sizeOfMessage, index);
+					sizeOfMessage += atoi(sockets[index].messageData[(string)"Content-Length:"].c_str());
+				}
+				else if (option == "PUT")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_PUT;
+
+					extractDataToMap(sstream, sizeOfMessage, index);
+					sizeOfMessage += atoi(sockets[index].messageData[(string)"Content-Length:"].c_str());
+				}
+				else if (option == "DELETE")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_DELETE;
+
+					extractDataToMap(sstream, sizeOfMessage, index);
+				}
+				else if (option == "TRACE")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_TRACE;
+
+					extractTraceDataToMap(sstream, sizeOfMessage, index);
+				}
+				else if (option == "OPTIONS")
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_OPTIONS;
+
+					extractDataToMap(sstream, sizeOfMessage, index);
+				}
+				else
+				{
+					sockets[index].send = SEND;
+					sockets[index].sendSubType = SEND_NOT_IMPLEMENTED;
+
+					extractDataToMap(sstream, sizeOfMessage, index); // clearing the request buffer
+				}
 			
-			if (option == "GET")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_GET;
-
-				extractDataToMap(sstream, sizeOfMessage, index);
-			}
-			else if (option == "HEAD")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_HEAD;
-
-				extractDataToMap(sstream, sizeOfMessage, index);
-			}
-			else if (option == "POST")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_POST;
-
-				extractDataToMap(sstream, sizeOfMessage, index);
-				sizeOfMessage += atoi(sockets[index].messageData[(string)"Content-Length:"].c_str());
-			}
-			else if (option == "PUT")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_PUT;
-				
-				extractDataToMap(sstream, sizeOfMessage, index);
-				sizeOfMessage += atoi(sockets[index].messageData[(string)"Content-Length:"].c_str());
-			}
-			else if (option == "DELETE")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_DELETE;
-
-				extractDataToMap(sstream, sizeOfMessage, index);
-			}
-			else if (option == "TRACE")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_TRACE;
-
-				extractTraceDataToMap(sstream, sizeOfMessage, index);
-				//extractDataToMap(sstream, sizeOfMessage, index);
-			}
-			else if (option == "OPTIONS")
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_OPTIONS;
-
-				extractDataToMap(sstream, sizeOfMessage, index);
-			}
-			else
-			{
-				sockets[index].send = SEND;
-				sockets[index].sendSubType = SEND_NOT_IMPLEMENTED;
-				
-				extractDataToMap(sstream, sizeOfMessage, index); // clearing the request buffer
-			}
-
 			memcpy(sockets[index].buffer, &sockets[index].buffer[sizeOfMessage], sockets[index].len - sizeOfMessage);
 			sockets[index].len -= sizeOfMessage;
-
-			/*
-			else if (strncmp(sockets[index].buffer, "Exit", 4) == 0)
-			{
-				closesocket(msgSocket);
-				removeSocket(index);
-				return;
-			}*/
 		}
 	}
 }
@@ -230,9 +217,12 @@ void SocketsArray::sendMessage(int index)
 				while (!requestedFile.eof())
 				{
 					getline(requestedFile, fileData);
-					strBuff += fileData;
-					strBuff += "\r\n";
+					strBuff += fileData + "\r\n";
 				}
+			}
+			else if (statusCode == 404)
+			{
+				strBuff += Not_Found + "\r\n";
 			}
 		}
 		else if (sockets[index].sendSubType == SEND_HEAD)
@@ -261,14 +251,14 @@ void SocketsArray::sendMessage(int index)
 			ofstream PutRequestedFile(path);
 			if (!PutRequestedFile.is_open()) // the file is read only
 			{
-				message = "This Method is not Allowed.";
-				assembleResponseHeader(strBuff, 405, index, requestedFile, message.size(), getAllowedMethods(path) );
+				message = Not_Allowed + '\n';
+				assembleResponseHeader(strBuff, 405, index, requestedFile, message.length(), getAllowedMethods(path) );
 			}
 			else
 			{
 				PutRequestedFile << sockets[index].messageData[(string)"Body-Data"];
 
-				message = "Created Successfully\n";
+				message = Created_Successfully + '\n';
 				assembleResponseHeader(strBuff, 201, index, requestedFile, message.size());
 			}
 			strBuff += message;
@@ -300,16 +290,16 @@ void SocketsArray::sendMessage(int index)
 			switch (statusCode)
 			{
 			case 200:
-				messege = "file deleted successfully!!";
+				messege = Successfully_Deleted;
 				break;
 			case 400:
-				messege = "Bad Request!";
+				messege = Bad_Request;
 				break;
 			case 404:
-				messege = "Requested File Isn't Found!";
+				messege = Not_Found;
 				break;
 			case 500:
-				messege = "Error Couldn't Delete File!";
+				messege = Cant_Delete;
 				break;
 			default:
 				break;
@@ -417,8 +407,11 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 			strBuff += "Content-Length: " + to_string(fileSize) + "\n"
 				+ "Content-Type: text/html; charset=utf-8\n";
 			break;
+		case 404:
+			strBuff += "Content-Length: " + to_string(Not_Found.length()) + "\n"
+				+ "Content-Type: text/html; charset=utf-8\n";
+			break;
 		}
-		
 	}
 	else if (sockets[index].sendSubType == SEND_POST)
 	{
