@@ -50,7 +50,6 @@ void SocketsArray::acceptConnection(int index)
 	}
 	cout << "HTTP Server: Client " << inet_ntoa(from.sin_addr) << ":" << ntohs(from.sin_port) << " is connected." << msgSocket << endl;
 
-	//
 	// Set the socket to be in non-blocking mode.
 	//
 	unsigned long flag = 1;
@@ -77,27 +76,13 @@ void SocketsArray::receiveMessage(int index)
 
 	// fix or add:
 
-		// test5.html (debug didnt work)
-
-		// check what header field needed
-
 		// check what happens when recvBuff has no /r/n/r/n (half header is sent)
-
-		// add API file
-
-	// verify:
-
-		// check if all codes (200 OK, 404 NOT FOUND .... ) are correct
-	
-		// add Allow header line to 405 response messege
-
-		// support of '.html'
 
 	// bonus:
 
 		// save 'from' in 'acceptConnection' in order to print the address and port of client disconnecting later
 
-		// convert text answers to html answers ("File successfuly deleted"....)
+		// convert text answers to html answers - posible, but Not recomended - creates complications..
 
 	if (SOCKET_ERROR == bytesRecv)
 	{
@@ -127,9 +112,7 @@ void SocketsArray::receiveMessage(int index)
 			string nextLine;
 			getline(sstream , nextLine, '\n');
 
-			string option;
-			string path;
-			string protocol;
+			string option, path, protocol;
 			option = strtok(nextLine.data(), " ");
 			path = strtok(nullptr, " ");
 			protocol = strtok(nullptr, "\n");
@@ -266,11 +249,11 @@ void SocketsArray::sendMessage(int index)
 		}
 		else if (sockets[index].sendSubType == SEND_POST)
 		{
-			cout << sockets[index].messageData[(string)"Body-Data"] << endl;
-
-			assembleResponseHeader(strBuff, 200, index, requestedFile);
-			strBuff += "Request Processed Successfully\n";
-
+			string response("Request Processed Successfully\n");
+			cout << endl << sockets[index].messageData[(string)"Body-Data"] << endl; // print to console
+			int sizeOfBodyData = response.length(); // calcualte content length
+			assembleResponseHeader(strBuff, 200, index, requestedFile, sizeOfBodyData);
+			strBuff += response;
 		}
 		else if (sockets[index].sendSubType == SEND_PUT)
 		{
@@ -319,6 +302,9 @@ void SocketsArray::sendMessage(int index)
 			case 200:
 				messege = "file deleted successfully!!";
 				break;
+			case 400:
+				messege = "Bad Request!";
+				break;
 			case 404:
 				messege = "Requested File Isn't Found!";
 				break;
@@ -331,42 +317,6 @@ void SocketsArray::sendMessage(int index)
 			sizeOfBodyData = messege.length();
 			assembleResponseHeader(strBuff, statusCode, index, requestedFile, sizeOfBodyData);
 			strBuff += messege;
-
-			/*if (!requestedFile.is_open())
-				{
-					// file not found
-					assembleResponseHeader(strBuff, 404, index, requestedFile);
-					strBuff += "Requested File Isn't Found\n";
-				}
-				else
-				{
-					if (path.substr(path.size() - 4, path.size()) == ".txt" || path.substr(path.size() - 4, path.size()) == ".htm")
-					{
-						requestedFile.close();
-						bool isDeleted = std::filesystem::remove(path);
-
-						if (isDeleted)
-						{
-							assembleResponseHeader(strBuff, 200, index, requestedFile);
-							strBuff += "File Successfully Deleted \n";
-						}
-						else
-						{
-							assembleResponseHeader(strBuff, 500, index, requestedFile);
-							strBuff += "Error Couldn't Delete File\n";
-						}
-
-
-					}
-					else
-					{
-						// no supported file format
-						assembleResponseHeader(strBuff, 503, index, requestedFile);
-						strBuff += "File Format Not Supported \n";
-					}
-				}*/
-		
-			
 		}
 		else if (sockets[index].sendSubType == SEND_TRACE)
 		{
@@ -409,10 +359,8 @@ void SocketsArray::sendMessage(int index)
 	{
 		cout << "HTTP Server: Client " << sockets[index].id << " is disconnected\n";
 		closesocket(sockets[index].id);
-		removeSocket(index);
-		
+		removeSocket(index);	
 	}
-	
 }
 
 void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index)
@@ -476,7 +424,7 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 	{
 		if (code == 200)
 		{
-			strBuff += "Content-Length: " + to_string(sizeOfBodyData) + "\nContent-Type: text/html\n";
+			strBuff += "Content-Length: " + to_string(sizeOfBodyData) + "\nContent-Type: text/html; charset=utf-8\n";
 		}
 	}
 	else if (sockets[index].sendSubType == SEND_PUT)
@@ -498,9 +446,7 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 	}
 	else if (sockets[index].sendSubType == SEND_OPTIONS)
 	{
-		strBuff += "Allow: " + headerExtraInfo + "\n"
-			+ "Content-Length: 0\n" 
-			+ "Content-Type: text/html\n";
+		strBuff += "Allow: " + headerExtraInfo + "\n";
 	}
 	else if (sockets[index].sendSubType == SEND_NOT_IMPLEMENTED)
 	{
@@ -508,16 +454,16 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 	}
 	strBuff += "Connection: " + sockets[index].messageData[(string)"Connection"] + "\n";
 	strBuff += "\n";
-
 }
 
 int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFile)
 {
 	bool hasQueryString = false;
 	int indexQuestionMark = path.find_first_of('?');
-	string langParmeter;
-	string queryParameter;
-	string defaultPath;
+	string langParmeter, queryParameter, defaultPath;
+
+	int indexExtention = path.find_first_of('.');
+	string fileNameExtention; 
 
 	if (indexQuestionMark != string::npos) // found query string
 	{
@@ -525,6 +471,7 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 		string quaryStr = path.substr(indexQuestionMark + 1);
 		path = path.substr(0, indexQuestionMark);
 		defaultPath = path;
+		fileNameExtention = path.substr(indexExtention + 1);
 
 		int indexEqualSign = quaryStr.find_first_of('=');
 		if (indexEqualSign == string::npos) // invalid query string
@@ -539,7 +486,7 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 		{
 			if (langParmeter != "en")
 			{
-				path = path.substr(0, path.length() - 4) + "-" + langParmeter + path.substr(path.length() - 4);
+				path = path.substr(0, path.length() - (fileNameExtention.length() +1)) + "-" + langParmeter + '.' + fileNameExtention;
 			}
 		}
 		else // unknown language or unknown quary parameter
@@ -547,31 +494,11 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 			return 400;
 		}
 
-		/*if (queryParameter == "lang=")
-		{
-			
-			if (langParmeter == "en" || langParmeter == "he" || langParmeter == "fr")
-			{
-				if (langParmeter != "en")
-				{
-					path = path.substr(0, path.length() - 4) + "-" + langParmeter + path.substr(path.length() - 4);
-				}
-			}
-			else // uknown lang
-			{
-				assembleResponseHeader(strBuff, 503, index, requestedFile);
-			}
-		}
-		else // unknown qrery string
-		{
-			assembleResponseHeader(strBuff, 503, index, requestedFile);
-		}*/
 		requestedFile.close();
 		requestedFile.open(path);
 	}
-
-	int indexExtention = path.find_first_of('.');
-	string fileNameExtention = path.substr(indexExtention + 1);
+	indexExtention = path.find_first_of('.');
+	fileNameExtention = path.substr(indexExtention + 1);
 	if (fileNameExtention != "txt" && fileNameExtention != "htm" && fileNameExtention != "html")
 	{
 		return 500;

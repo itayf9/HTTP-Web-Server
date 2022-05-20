@@ -6,8 +6,6 @@
 
 const int HTTP_PORT = 8080;
 
-
-
 void main()
 {
 	std::filesystem::path p = "C:/temp/";

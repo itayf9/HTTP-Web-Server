@@ -17,8 +17,6 @@ const int LISTEN = 1;
 const int RECEIVE = 2;
 const int IDLE = 3;
 const int SEND = 4;
-//const int SEND_TIME = 1; //delete
-//const int SEND_SECONDS = 2; // delete
 const int SEND_GET = 1;
 const int SEND_HEAD = 2;
 const int SEND_POST = 3;
@@ -42,9 +40,8 @@ struct SocketState
 	map<string, string> messageData;
 	time_t timerSinceLastByteRecv = 0;
 	int len;
+	sockaddr from;
 };
-
-
 
 class SocketsArray
 {
