@@ -76,6 +76,7 @@ void SocketsArray::receiveMessage(int index)
 
 	// fix or add:
 		// check what happens when recvBuff has no /r/n (half header is sent)
+	    // DELETE with 'Body-Data' causes server stuck (send mode is IDLE), but other methods like GET with 'Body-Data' causes no problem
 
 	// bonus:
 		// save 'from' in 'acceptConnection' in order to print the address and port of client disconnecting later
@@ -272,6 +273,7 @@ void SocketsArray::sendMessage(int index)
 			if (sockets[index].messageData.find((string)"Body-Data") != sockets[index].messageData.end())
 			{
 				statusCode = 400;
+				requestedFile.close();
 			}
 			else
 			{
@@ -351,6 +353,8 @@ void SocketsArray::sendMessage(int index)
 		closesocket(sockets[index].id);
 		removeSocket(index);	
 	}
+
+	sockets[index].messageData.clear();
 }
 
 void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index)
