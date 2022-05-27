@@ -49,8 +49,8 @@ void SocketsArray::acceptConnection(int index) // accepts a new connection
 		cout << "HTTP Server: Error at accept(): " << WSAGetLastError() << endl;
 		return;
 	}
-	cout << "HTTP Server: Client " << inet_ntoa(from.sin_addr) << ":" << ntohs(from.sin_port) << " is connected." << msgSocket << endl;
-
+	cout << "HTTP Server: Client " << inet_ntoa(from.sin_addr) << ":" << ntohs(from.sin_port) << " is connected (socket id: " << msgSocket << ")." << endl;
+		
 	// Set the socket to be in non-blocking mode.
 	unsigned long flag = 1;
 	if (ioctlsocket(msgSocket, FIONBIO, &flag) != 0)
@@ -355,7 +355,7 @@ void SocketsArray::sendMessage(int index) // send a response messege to socket a
 	// closes the connection after sending the response, in the connection header is set to 'close'
 	if (sockets[index].messageData[(string)"Connection"] == "close\r")
 	{
-		cout << "HTTP Server: Client " << sockets[index].id << " is disconnected\n";
+		cout << "HTTP Server: Client (socket id: " << sockets[index].id << ") is disconnected\n";
 		closesocket(sockets[index].id);
 		removeSocket(index);
 	}

@@ -49,7 +49,6 @@ struct SocketState
 	map<string, string> messageData;
 	time_t timerSinceLastByteRecv = 0;
 	int len;
-	sockaddr_in fromAddress;
 };
 
 class SocketsArray

@@ -5,6 +5,7 @@
 #include "SocketsArray.h"
 
 const int HTTP_PORT = 8080;
+const int MAX_WAIT_TIME = 120;
 
 void main()
 {
@@ -140,11 +141,11 @@ void main()
 
 		for (int i = 0; i < MAX_SOCKETS; i++)
 		{
-			if (socketsArr.getSockets()[i].recv == RECEIVE && socketsArr.calcTimePassed(i) >= 120)
+			if (socketsArr.getSockets()[i].recv == RECEIVE && socketsArr.calcTimePassed(i) >= MAX_WAIT_TIME)
 			{
 				nfd--;
 
-				cout << "HTTP Server: Client " << socketsArr.getSockets()[i].id << " is disconnected\n";
+				cout << "HTTP Server: Client (socket id: " << socketsArr.getSockets()[i].id << ") is disconnected\n";
 				closesocket(socketsArr.getSockets()[i].id);
 				socketsArr.removeSocket(i);
 			}
