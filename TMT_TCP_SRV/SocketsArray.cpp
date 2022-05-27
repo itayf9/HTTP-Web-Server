@@ -602,10 +602,36 @@ void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessa
 	sizeOfMessage += nextLine.size() + 1;
 	while (nextLine != "\r")
 	{
+		string key = strtok(nextLine.data(), " ");
+		string data = strtok(nullptr, "\n");
+		key = key.substr(0, key.size() - 1); // remove the ':' from the key 
+		sockets[index].messageData[key] = data; // add the data value to the dictionary
+
 		getline(sstream, nextLine, '\n');
 		sizeOfMessage += nextLine.size() + 1;
 		traceBuff += nextLine + '\n';
 	}
+
+	if (sockets[index].messageData.find((string)"Content-Length") != sockets[index].messageData.end()) // check if request contains body data
+	{
+		string bodyData;
+		char currCh;
+
+		for (int i = 0; i < atoi(sockets[index].messageData[(string)"Content-Length"].c_str()); i++) // extract the body data to dictionary 
+		{
+			sstream.get(currCh);
+			if (sstream.eof())
+			{
+				sockets[index].send = IDLE;
+				break;
+			}
+			bodyData += currCh;
+		}
+		sockets[index].messageData[(string)"Body-Data"] = bodyData;
+		sizeOfMessage += bodyData.size(); // update size of messege
+		traceBuff += bodyData;
+	}
+
 	sockets[index].messageData["TRACE"] = traceBuff; // copy all the trace messege to messageData
 }
 /*----------------------------------------------------------------*/
