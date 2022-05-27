@@ -406,7 +406,7 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 
 	strBuff += "HTTP/1.1 " + to_string(code) + " " + response_codes[code] + "\n" + "Date: " + ctime(&timer) + "Server: " + SERVER_NAME + "\n"; // server constant response 
 
-	if (sockets[index].sendSubType == SEND_GET || sockets[index].sendSubType == SEND_HEAD)
+	if (sockets[index].sendSubType == SEND_GET)
 	{
 		int fileSize;
 		switch (code)
@@ -422,6 +422,10 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 				+ "Content-Type: text/html; charset=utf-8\n";
 			break;
 		}
+	}
+	else if (sockets[index].sendSubType == SEND_HEAD)
+	{
+		strBuff += "Content-Type: text/html; charset=utf-8\n";
 	}
 	else if (sockets[index].sendSubType == SEND_POST)
 	{
