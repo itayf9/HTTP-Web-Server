@@ -124,13 +124,13 @@ void main()
 				FD_SET(socketsArr.getSockets()[i].id, &waitSend);
 		}
 
-		//
+
+
 		// Wait for interesting event.
 		// Note: First argument is ignored. The fourth is for exceptions.
 		// And as written above the last is a timeout, hence we are blocked if nothing happens.
-		//
 		int nfd;
-		timeval maxTimeToWait = { 1, 0 };
+		timeval maxTimeToWait = { 1, 0 }; // sets the max time to wait in select, for 1 second
 		nfd = select(0, &waitRecv, &waitSend, NULL, &maxTimeToWait);
 		if (nfd == SOCKET_ERROR)
 		{
@@ -139,6 +139,9 @@ void main()
 			return;
 		}
 
+		// runs through the sockets.
+		// checks if a socket has passed the max time since last messege recieved.
+		// if so, removes the socket.
 		for (int i = 0; i < MAX_SOCKETS; i++)
 		{
 			if (socketsArr.getSockets()[i].recv == RECEIVE && socketsArr.calcTimePassed(i) >= MAX_WAIT_TIME)

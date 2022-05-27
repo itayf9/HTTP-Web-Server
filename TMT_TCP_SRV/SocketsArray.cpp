@@ -404,8 +404,10 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 {
 	time_t timer; time(&timer);
 
-	strBuff += "HTTP/1.1 " + to_string(code) + " " + response_codes[code] + "\n" + "Date: " + ctime(&timer) + "Server: " + SERVER_NAME + "\n"; // server constant response 
+	// adding server's constant response 
+	strBuff += "HTTP/1.1 " + to_string(code) + " " + response_codes[code] + "\n" + "Date: " + ctime(&timer) + "Server: " + SERVER_NAME + "\n";
 
+	// adding more headers based on the method and the response code
 	if (sockets[index].sendSubType == SEND_GET)
 	{
 		int fileSize;
@@ -466,17 +468,17 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFile) // selects a matching response status
 {
 	bool hasQueryString = false;
-	int indexQuestionMark = path.find_first_of('?'); // find question mark character
+	int indexQuestionMark = path.find_first_of('?'); // find question mark character ('?')
 	string langParmeter, queryParameter, defaultPath;
 
-	int indexExtention = path.find_first_of('.'); // find dot character
+	int indexExtention = path.find_first_of('.'); // find dot character ('.')
 	string fileNameExtention; 
 
-	if (indexQuestionMark != string::npos) //  found query string
+	if (indexQuestionMark != string::npos) // found query string
 	{
 		hasQueryString = true;
-		string quaryStr = path.substr(indexQuestionMark + 1); // extract the quaryStr to variable
-		path = path.substr(0, indexQuestionMark); // update path 
+		string quaryStr = path.substr(indexQuestionMark + 1); // extract the quary string to variable
+		path = path.substr(0, indexQuestionMark); // update path to exclude the quary string
 		defaultPath = path;
 		fileNameExtention = path.substr(indexExtention + 1); // extract file name extension to variable
 
@@ -489,7 +491,7 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 		queryParameter = quaryStr.substr(0, indexEqualSign);
 		langParmeter = quaryStr.substr(indexEqualSign + 1);
 
-		if (validQueryParameter(queryParameter) && validLangParameter(langParmeter)) // all good 
+		if (validQueryParameter(queryParameter) && validLangParameter(langParmeter)) // both query parameter and content are valid 
 		{
 			if (langParmeter != "en") // fixing the path value to the requested language 
 			{
@@ -561,7 +563,7 @@ string SocketsArray::getAllowedMethods(const string& path) // returns all the al
 			availableMethods += "GET, HEAD, DELETE "; 
 			requestedFileIn.close();
 
-			ofstream requestedFileOut(path); // file is wirteable
+			ofstream requestedFileOut(path); // file is writeable
 			if (requestedFileOut.is_open())
 			{
 				availableMethods += "POST, PUT ";
@@ -573,10 +575,7 @@ string SocketsArray::getAllowedMethods(const string& path) // returns all the al
 			availableMethods += "PUT ";
 		}
 
-
-
 		availableMethods += "TRACE, OPTIONS";
-
 	}
 
 	return availableMethods;

@@ -29,8 +29,6 @@ const int SEND_OPTIONS = 7;
 const int SEND_NOT_IMPLEMENTED = 8;
 const int MAX_BUF_LEN = 1024;
 const string SERVER_NAME = (string)"ITAY&DANIEL";
-const string FR = (string)"-fr";
-const string HE = (string)"-he";
 const string Not_Found = string("<html><head></head><body><center><h1>404 Not Found</h1></center></body></html>");
 const string Not_Allowed = string("<html><head></head><body><center><h1>405 This Method is Not Allowed.</h1></center></body></html>");
 const string Bad_Request = string("<html><head></head><body><center><h1>400 Bad Request</h1></center></body></html>");
@@ -41,14 +39,14 @@ const string Processed_Successfully = string("<html><head></head><body><center><
 
 struct SocketState
 {
-	SOCKET id;			
-	int	recv;			
-	int	send;			
-	int sendSubType;	
-	char buffer[MAX_BUF_LEN];
-	map<string, string> messageData;
-	time_t timerSinceLastByteRecv = 0;
-	int len;
+	SOCKET id;								// socket id
+	int	recv;								// recieve status
+	int	send;								// send status
+	int sendSubType;						// type of the method
+	char buffer[MAX_BUF_LEN];				// buffer of recieved messege
+	map<string, string> messageData;		// map of the messege's information
+	time_t timerSinceLastByteRecv = 0;		// timer since last messege recieved to this socket
+	int len;								// length of the buffer
 };
 
 class SocketsArray
