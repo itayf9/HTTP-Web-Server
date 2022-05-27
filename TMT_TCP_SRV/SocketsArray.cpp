@@ -1,16 +1,16 @@
 #include "SocketsArray.h"
 
-int SocketsArray::getSocketCounter() const // returns the value of 'socketCounter'
+int SocketsArray::getSocketCounter() const // returns the 'socketsCounter'
 {
 	return socketsCount;
 }
-
-SocketState* const SocketsArray::getSockets() // returns the 'sockets' array
+/*----------------------------------------------------------------*/
+SocketState* const SocketsArray::getSockets() // returns the 'sockets' array 
 {
 	return sockets;
 }
-
-bool SocketsArray::addSocket(SOCKET id, int what)
+/*----------------------------------------------------------------*/
+bool SocketsArray::addSocket(SOCKET id, int what) // adds a new socket
 {
 	// runs through the sockets array, tries to find an empty space for a new socket
 	for (int i = 0; i < MAX_SOCKETS; i++)
@@ -28,16 +28,16 @@ bool SocketsArray::addSocket(SOCKET id, int what)
 	}
 	return (false);
 }
-
-void SocketsArray::removeSocket(int index)
+/*----------------------------------------------------------------*/
+void SocketsArray::removeSocket(int index) // removes a socket at 'index'
 {
 	sockets[index].id = 0;
 	sockets[index].recv = EMPTY;
 	sockets[index].send = EMPTY;
 	socketsCount--;
 }
-
-void SocketsArray::acceptConnection(int index)
+/*----------------------------------------------------------------*/
+void SocketsArray::acceptConnection(int index) // accepts a new connection
 {
 	SOCKET id = sockets[index].id;
 	struct sockaddr_in from;		// Address of sending partner
@@ -66,8 +66,8 @@ void SocketsArray::acceptConnection(int index)
 	}
 	return;
 }
-
-void SocketsArray::receiveMessage(int index)
+/*----------------------------------------------------------------*/
+void SocketsArray::receiveMessage(int index) // recieves a new messege from socket at 'index'
 {
 	SOCKET msgSocket = sockets[index].id;
 	time(&sockets[index].timerSinceLastByteRecv);
@@ -171,8 +171,8 @@ void SocketsArray::receiveMessage(int index)
 		}
 	}
 }
-
-void SocketsArray::sendMessage(int index)
+/*----------------------------------------------------------------*/
+void SocketsArray::sendMessage(int index) // send a response messege to socket at 'index' 
 {
 	int bytesSent = 0;
 	int statusCode;
@@ -362,8 +362,8 @@ void SocketsArray::sendMessage(int index)
 
 	sockets[index].messageData.clear();
 }
-
-void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index)
+/*----------------------------------------------------------------*/
+void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index) // extracts the data from the messege to a map
 {
 	string nextLine;
 
@@ -399,8 +399,8 @@ void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, c
 		sizeOfMessage += bodyData.size(); // update size of messege
 	}
 }
-
-void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, const int& index, ifstream& requestedFile, int sizeOfBodyData, string headerExtraInfo)
+/*----------------------------------------------------------------*/
+void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, const int& index, ifstream& requestedFile, int sizeOfBodyData, string headerExtraInfo) // assembles a response header
 {
 	time_t timer; time(&timer);
 
@@ -458,8 +458,8 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 	strBuff += "Connection: " + sockets[index].messageData[(string)"Connection"] + "\n";
 	strBuff += "\n";
 }
-
-int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFile)
+/*----------------------------------------------------------------*/
+int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFile) // selects a matching response status
 {
 	bool hasQueryString = false;
 	int indexQuestionMark = path.find_first_of('?'); // find question mark character
@@ -540,8 +540,8 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 		return 200;
 	}
 }
-
-string SocketsArray::getAllowedMethods(const string& path)
+/*----------------------------------------------------------------*/
+string SocketsArray::getAllowedMethods(const string& path) // returns all the allowed methods that can be operated on the file in 'path'
 {
 	string availableMethods;
 	if (path == "*")
@@ -577,18 +577,18 @@ string SocketsArray::getAllowedMethods(const string& path)
 
 	return availableMethods;
 }
-
-bool SocketsArray::validQueryParameter(string& queryStr)
+/*----------------------------------------------------------------*/
+bool SocketsArray::validQueryParameter(string& queryStr) // checks the validation of the query parameters
 {
-	return queryStr == "lang" ? true: false; // check valid query parameters
+	return queryStr == "lang" ? true: false; 
 }
-
-bool SocketsArray::validLangParameter(string& langParameter)
+/*----------------------------------------------------------------*/
+bool SocketsArray::validLangParameter(string& langParameter)  // checks the validation of the lang parameter
 {
-	return (langParameter == "en" || langParameter == "he" || langParameter == "fr") ? true : false; // check valid lang parameters
+	return (langParameter == "en" || langParameter == "he" || langParameter == "fr") ? true : false;
 }
-
-void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index)
+/*----------------------------------------------------------------*/
+void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index) // extracts the data from the messege to a map, when the methos is TRACE
 {
 	string nextLine;
 	string traceBuff;
@@ -604,14 +604,12 @@ void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessa
 	}
 	sockets[index].messageData["TRACE"] = traceBuff; // copy all the trace messege to messageData
 }
-
-double SocketsArray::calcTimePassed(int index)
+/*----------------------------------------------------------------*/
+double SocketsArray::calcTimePassed(int index) // calculates the diffrence between the last time measure for socket at 'index', and the current time
 {
 	time_t newMeasure;
 	time(&newMeasure);
 	double timePassed = difftime(newMeasure, sockets[index].timerSinceLastByteRecv); // get time difference
-
-	//cout << "time passed : " + to_string(timePassed) + '\n';
 
 	return timePassed;
 }

@@ -41,10 +41,10 @@ const string Processed_Successfully = string("<html><head></head><body><center><
 
 struct SocketState
 {
-	SOCKET id;			// Socket handle
-	int	recv;			// Receiving?
-	int	send;			// Sending?
-	int sendSubType;	// Sending sub-type
+	SOCKET id;			
+	int	recv;			
+	int	send;			
+	int sendSubType;	
 	char buffer[MAX_BUF_LEN];
 	map<string, string> messageData;
 	time_t timerSinceLastByteRecv = 0;
@@ -103,20 +103,20 @@ private:
 
 
 public:
-	int getSocketCounter() const;
-	SocketState* const getSockets();
+	int getSocketCounter() const; // returns the 'socketsCounter'
+	SocketState* const getSockets(); // returns the 'sockets' array 
 
-	bool addSocket(SOCKET id, int what);
-	void removeSocket(int index);
-	void acceptConnection(int index);
-	void receiveMessage(int index);
-	void sendMessage(int index);
-	void extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index);
-	void assembleResponseHeader(string& strBuff, const int& code,const int& index, ifstream& requestedFile, int sizeOfBodyData = 0, string headerExtraInfo= "");
-	int decodePathToResponseStatus(string& path, ifstream& requestedFile);
-	string getAllowedMethods(const string& path);
-	bool validQueryParameter(string& queryStr);
-	bool validLangParameter(string& langParameter);
-	void extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index);
-	double calcTimePassed(int index);
+	bool addSocket(SOCKET id, int what); // adds a new socket
+	void removeSocket(int index); // removes a socket at 'index'
+	void acceptConnection(int index); // accepts a new connection
+	void receiveMessage(int index); // recieves a new messege from socket at 'index'
+	void sendMessage(int index); // send a response messege to socket at 'index' 
+	void extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index); // extracts the data from the messege to a map
+	void assembleResponseHeader(string& strBuff, const int& code,const int& index, ifstream& requestedFile, int sizeOfBodyData = 0, string headerExtraInfo= ""); // assembles a response header
+	int decodePathToResponseStatus(string& path, ifstream& requestedFile); // selects a matching response status
+	string getAllowedMethods(const string& path); // returns all the allowed methods that can be operated on the file in 'path'
+	bool validQueryParameter(string& queryStr); // checks the validation of the query parameters
+	bool validLangParameter(string& langParameter); // checks the validation of the lang parameter
+	void extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index); // extracts the data from the messege to a map, when the methos is TRACE
+	double calcTimePassed(int index); // calculates the diffrence between the last time measure for socket at 'index', and the current time
 };
