@@ -363,23 +363,23 @@ void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, c
 
 	getline(sstream, nextLine, '\n');
 	sizeOfMessage += nextLine.size() + 1;
-	while (nextLine != "\r")
+	while (nextLine != "\r") // reading the request data
 	{
 		string key = strtok(nextLine.data(), " ");
 		string data = strtok(nullptr, "\n");
-		key = key.substr(0, key.size() - 1);
-		sockets[index].messageData[key] = data;
+		key = key.substr(0, key.size() - 1); // remove the ':' from the key 
+		sockets[index].messageData[key] = data; // add the data value to the dictionary
 
 		getline(sstream, nextLine, '\n');
-		sizeOfMessage += nextLine.size() + 1;
+		sizeOfMessage += nextLine.size() + 1; // calculating size of request messege
 	}
 
-	if (sockets[index].messageData.find((string)"Content-Length") != sockets[index].messageData.end())
+	if (sockets[index].messageData.find((string)"Content-Length") != sockets[index].messageData.end()) // check if request contains body data
 	{
 		string bodyData;
 		char currCh;
 
-		for (int i = 0; i < atoi(sockets[index].messageData[(string)"Content-Length"].c_str()); i++)
+		for (int i = 0; i < atoi(sockets[index].messageData[(string)"Content-Length"].c_str()); i++) // extract the body data to dictionary 
 		{
 			sstream.get(currCh);
 			if (sstream.eof())
@@ -390,7 +390,7 @@ void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, c
 			bodyData += currCh;
 		}
 		sockets[index].messageData[(string)"Body-Data"] = bodyData;
-		sizeOfMessage += bodyData.size();
+		sizeOfMessage += bodyData.size(); // update size of messege
 	}
 }
 
@@ -398,7 +398,7 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 {
 	time_t timer; time(&timer);
 
-	strBuff += "HTTP/1.1 " + to_string(code) + " " + response_codes[code] + "\n" + "Date: " + ctime(&timer) + "Server: " + SERVER_NAME + "\n";
+	strBuff += "HTTP/1.1 " + to_string(code) + " " + response_codes[code] + "\n" + "Date: " + ctime(&timer) + "Server: " + SERVER_NAME + "\n"; // server constant response 
 
 	if (sockets[index].sendSubType == SEND_GET || sockets[index].sendSubType == SEND_HEAD)
 	{
@@ -456,21 +456,21 @@ void SocketsArray::assembleResponseHeader(string& strBuff, const int& code, cons
 int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFile)
 {
 	bool hasQueryString = false;
-	int indexQuestionMark = path.find_first_of('?');
+	int indexQuestionMark = path.find_first_of('?'); // find question mark character
 	string langParmeter, queryParameter, defaultPath;
 
-	int indexExtention = path.find_first_of('.');
+	int indexExtention = path.find_first_of('.'); // find dot character
 	string fileNameExtention; 
 
-	if (indexQuestionMark != string::npos) // found query string
+	if (indexQuestionMark != string::npos) //  found query string
 	{
 		hasQueryString = true;
-		string quaryStr = path.substr(indexQuestionMark + 1);
-		path = path.substr(0, indexQuestionMark);
+		string quaryStr = path.substr(indexQuestionMark + 1); // extract the quaryStr to variable
+		path = path.substr(0, indexQuestionMark); // update path 
 		defaultPath = path;
-		fileNameExtention = path.substr(indexExtention + 1);
+		fileNameExtention = path.substr(indexExtention + 1); // extract file name extension to variable
 
-		int indexEqualSign = quaryStr.find_first_of('=');
+		int indexEqualSign = quaryStr.find_first_of('='); // find EqualSign character
 		if (indexEqualSign == string::npos) // invalid query string
 		{
 			return 400;
@@ -479,9 +479,9 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 		queryParameter = quaryStr.substr(0, indexEqualSign);
 		langParmeter = quaryStr.substr(indexEqualSign + 1);
 
-		if (validQueryParameter(queryParameter) && validLangParameter(langParmeter))
+		if (validQueryParameter(queryParameter) && validLangParameter(langParmeter)) // all good 
 		{
-			if (langParmeter != "en")
+			if (langParmeter != "en") // fixing the path value to the requested language 
 			{
 				path = path.substr(0, path.length() - (fileNameExtention.length() +1)) + "-" + langParmeter + '.' + fileNameExtention;
 			}
@@ -496,7 +496,7 @@ int SocketsArray::decodePathToResponseStatus(string& path, ifstream& requestedFi
 	}
 	indexExtention = path.find_first_of('.');
 	fileNameExtention = path.substr(indexExtention + 1);
-	if (fileNameExtention != "txt" && fileNameExtention != "htm" && fileNameExtention != "html")
+	if (fileNameExtention != "txt" && fileNameExtention != "htm" && fileNameExtention != "html") // check valid file extension
 	{
 		return 500;
 	}
@@ -546,12 +546,12 @@ string SocketsArray::getAllowedMethods(const string& path)
 	else
 	{
 		ifstream requestedFileIn(path);
-		if (requestedFileIn.is_open())
+		if (requestedFileIn.is_open()) // file is readable
 		{
-			availableMethods += "GET, HEAD, DELETE ";
+			availableMethods += "GET, HEAD, DELETE "; 
 			requestedFileIn.close();
 
-			ofstream requestedFileOut(path);
+			ofstream requestedFileOut(path); // file is wirteable
 			if (requestedFileOut.is_open())
 			{
 				availableMethods += "POST, PUT ";
@@ -574,19 +574,19 @@ string SocketsArray::getAllowedMethods(const string& path)
 
 bool SocketsArray::validQueryParameter(string& queryStr)
 {
-	return queryStr == "lang" ? true: false;
+	return queryStr == "lang" ? true: false; // check valid query parameters
 }
 
 bool SocketsArray::validLangParameter(string& langParameter)
 {
-	return (langParameter == "en" || langParameter == "he" || langParameter == "fr") ? true : false;
+	return (langParameter == "en" || langParameter == "he" || langParameter == "fr") ? true : false; // check valid lang parameters
 }
 
 void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index)
 {
 	string nextLine;
 	string traceBuff;
-
+	
 	getline(sstream, nextLine, '\n');
 	traceBuff += nextLine + '\n';
 	sizeOfMessage += nextLine.size() + 1;
@@ -596,14 +596,14 @@ void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessa
 		sizeOfMessage += nextLine.size() + 1;
 		traceBuff += nextLine + '\n';
 	}
-	sockets[index].messageData["TRACE"] = traceBuff;
+	sockets[index].messageData["TRACE"] = traceBuff; // copy all the trace messege to messageData
 }
 
 double SocketsArray::calcTimePassed(int index)
 {
 	time_t newMeasure;
 	time(&newMeasure);
-	double timePassed = difftime(newMeasure, sockets[index].timerSinceLastByteRecv);
+	double timePassed = difftime(newMeasure, sockets[index].timerSinceLastByteRecv); // get time difference
 
 	//cout << "time passed : " + to_string(timePassed) + '\n';
 
