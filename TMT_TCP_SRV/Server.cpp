@@ -10,16 +10,14 @@ const int HTTP_PORT = 8080;
 
 void main()
 {
-	std::filesystem::path p = "C:/temp/";
+	std::filesystem::path p = "C:/temp/"; // set the files resource to "C:/temp/"
 	filesystem::current_path(p);
 
 	SocketsArray socketsArr;
 
 	// Initialize Winsock (Windows Sockets).
-
 	// Create a WSADATA object called wsaData.
-	// The WSADATA structure contains information about the Windows 
-	// Sockets implementation.
+	// The WSADATA structure contains information about the Windows Sockets implementation.
 	WSAData wsaData;
 
 	// Call WSAStartup and return its value as an integer and check for errors.
@@ -32,7 +30,6 @@ void main()
 		return;
 	}
 
-	// Server side:
 	// Create and bind a socket to an internet address.
 	// Listen through the socket for incoming connections.
 
