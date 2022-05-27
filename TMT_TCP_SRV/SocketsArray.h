@@ -9,8 +9,10 @@
 #include <map>
 #include <fstream>
 #include <filesystem>
+
 using namespace std;
 using std::char_traits;
+
 const int MAX_SOCKETS = 60;
 const int EMPTY = 0;
 const int LISTEN = 1;
@@ -25,7 +27,7 @@ const int SEND_DELETE = 5;
 const int SEND_TRACE = 6;
 const int SEND_OPTIONS = 7;
 const int SEND_NOT_IMPLEMENTED = 8;
-const int MAX_BUF_LEN = 1024; // decide what is the needed size !!!!!!!!
+const int MAX_BUF_LEN = 1024;
 const string SERVER_NAME = (string)"ITAY&DANIEL";
 const string FR = (string)"-fr";
 const string HE = (string)"-he";
@@ -35,6 +37,7 @@ const string Bad_Request = string("<html><head></head><body><center><h1>400 Bad 
 const string Created_Successfully = string("<html><head></head><body><center><h1>Created Successfully</h1></center></body></html>");
 const string Cant_Delete = string("<html><head></head><body><center><h1>Error Couldn't Delete File!</h1></center></body></html>");
 const string Successfully_Deleted = string("<html><head></head><body><center><h1>file deleted successfully!!</h1></center></body></html>");
+const string Processed_Successfully = string("<html><head></head><body><center><h1>Processed_Successfully</h1></center></body></html>");
 
 struct SocketState
 {
