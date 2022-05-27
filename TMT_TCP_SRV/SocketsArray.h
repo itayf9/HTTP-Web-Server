@@ -114,6 +114,5 @@ public:
 	string getAllowedMethods(const string& path); // returns all the allowed methods that can be operated on the file in 'path'
 	bool validQueryParameter(string& queryStr); // checks the validation of the query parameters
 	bool validLangParameter(string& langParameter); // checks the validation of the lang parameter
-	void extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index); // extracts the data from the messege to a map, when the methos is TRACE
 	double calcTimePassed(int index); // calculates the diffrence between the last time measure for socket at 'index', and the current time
 };

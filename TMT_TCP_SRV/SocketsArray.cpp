@@ -153,7 +153,7 @@ void SocketsArray::receiveMessage(int index) // recieves a new messege from sock
 			else if (option == "TRACE")
 			{
 				sockets[index].sendSubType = SEND_TRACE;
-				extractTraceDataToMap(sstream, sizeOfMessage, index);
+				extractDataToMap(sstream, sizeOfMessage, index);
 			}
 			else if (option == "OPTIONS")
 			{
@@ -366,8 +366,10 @@ void SocketsArray::sendMessage(int index) // send a response messege to socket a
 void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index) // extracts the data from the messege to a map
 {
 	string nextLine;
+	string traceBuff;
 
 	getline(sstream, nextLine, '\n');
+	traceBuff += nextLine + '\n';
 	sizeOfMessage += nextLine.size() + 1;
 	while (nextLine != "\r") // reading the request data
 	{
@@ -377,6 +379,7 @@ void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, c
 		sockets[index].messageData[key] = data; // add the data value to the dictionary
 
 		getline(sstream, nextLine, '\n');
+		traceBuff += nextLine + '\n';
 		sizeOfMessage += nextLine.size() + 1; // calculating size of request messege
 	}
 
@@ -397,6 +400,12 @@ void SocketsArray::extractDataToMap(stringstream& sstream, int& sizeOfMessage, c
 		}
 		sockets[index].messageData[(string)"Body-Data"] = bodyData;
 		sizeOfMessage += bodyData.size(); // update size of messege
+		traceBuff += bodyData;
+	}
+
+	if (sockets[index].sendSubType == SEND_TRACE)
+	{
+		sockets[index].messageData["TRACE"] = traceBuff; // copy all the trace messege to messageData
 	}
 }
 /*----------------------------------------------------------------*/
@@ -589,49 +598,6 @@ bool SocketsArray::validQueryParameter(string& queryStr) // checks the validatio
 bool SocketsArray::validLangParameter(string& langParameter)  // checks the validation of the lang parameter
 {
 	return (langParameter == "en" || langParameter == "he" || langParameter == "fr") ? true : false;
-}
-/*----------------------------------------------------------------*/
-void SocketsArray::extractTraceDataToMap(stringstream& sstream, int& sizeOfMessage, const int& index) // extracts the data from the messege to a map, when the methos is TRACE
-{
-	string nextLine;
-	string traceBuff;
-	
-	getline(sstream, nextLine, '\n');
-	traceBuff += nextLine + '\n';
-	sizeOfMessage += nextLine.size() + 1;
-	while (nextLine != "\r")
-	{
-		string key = strtok(nextLine.data(), " ");
-		string data = strtok(nullptr, "\n");
-		key = key.substr(0, key.size() - 1); // remove the ':' from the key 
-		sockets[index].messageData[key] = data; // add the data value to the dictionary
-
-		getline(sstream, nextLine, '\n');
-		sizeOfMessage += nextLine.size() + 1;
-		traceBuff += nextLine + '\n';
-	}
-
-	if (sockets[index].messageData.find((string)"Content-Length") != sockets[index].messageData.end()) // check if request contains body data
-	{
-		string bodyData;
-		char currCh;
-
-		for (int i = 0; i < atoi(sockets[index].messageData[(string)"Content-Length"].c_str()); i++) // extract the body data to dictionary 
-		{
-			sstream.get(currCh);
-			if (sstream.eof())
-			{
-				sockets[index].send = IDLE;
-				break;
-			}
-			bodyData += currCh;
-		}
-		sockets[index].messageData[(string)"Body-Data"] = bodyData;
-		sizeOfMessage += bodyData.size(); // update size of messege
-		traceBuff += bodyData;
-	}
-
-	sockets[index].messageData["TRACE"] = traceBuff; // copy all the trace messege to messageData
 }
 /*----------------------------------------------------------------*/
 double SocketsArray::calcTimePassed(int index) // calculates the diffrence between the last time measure for socket at 'index', and the current time
